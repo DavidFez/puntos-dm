@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puntos Mayerli y David ❤️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans pb-10">
+
+    <header class="p-6 text-center border-b border-slate-800 bg-slate-900/50 backdrop-blur-md">
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent">
+            Puntos de Mayerli y David
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Fecha límite: <span id="meta-fecha" class="text-pink-400 font-mono">--/--/----</span></p>
+    </header>
+
+    <main class="max-w-md mx-auto p-4 space-y-6">
+        <section class="grid grid-cols-1 gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-lg font-medium text-pink-300">Mayerli 🥰</span>
+                    <span id="puntos-m" class="text-4xl font-black">--</span>
+                </div>
+                <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
+                    <div id="barra-m" class="bg-pink-500 h-full transition-all duration-700" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-lg font-medium text-blue-300">David 😎</span>
+                    <span id="puntos-d" class="text-4xl font-black">--</span>
+                </div>
+                <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
+                    <div id="barra-d" class="bg-blue-500 h-full transition-all duration-700" style="width: 0%"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-slate-900 border border-slate-700 rounded-3xl p-6">
+            <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 text-center">Registrar de Puntos</h3>
+            <div class="space-y-4">
+                <select id="input-usuario" class="w-full bg-slate-800 border-none rounded-xl p-3 focus:ring-2 focus:ring-violet-500 outline-none text-white appearance-none">
+                    <option value="puntos_m">Para Mayerli</option>
+                    <option value="puntos_d">Para David</option>
+                </select>
+
+                <div class="flex flex-row gap-2 w-full">
+                    <input id="input-puntos" type="number" placeholder="Pts" 
+                        class="w-[65px] bg-slate-800 border-none rounded-xl p-3 text-center outline-none focus:ring-2 focus:ring-violet-500 text-white box-border shrink-0">
+                    
+                    <input id="input-motivo" type="text" placeholder="¿Por qué?" 
+                        class="flex-1 bg-slate-800 border-none rounded-xl p-3 outline-none focus:ring-2 focus:ring-violet-500 text-white box-border min-w-0">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="enviarAccion('quitar')" class="bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-red-500/50">Descontar (-)</button>
+                    <button onclick="enviarAccion('añadir')" class="bg-emerald-500/20 hover:bg-emerald-500 text-emerald-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-emerald-500/50">Sumar (+)</button>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Historial de Puntos</h3>
+            <div id="historial-lista" class="flex flex-col gap-3 text-sm text-slate-400 text-center py-4 italic">
+                Cargando actividad...
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, increment, collection, addDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSna0h_RtHOHII73EHciBaRYPcBLXX6as",
+            authDomain: "puntos-dm.firebaseapp.com",
+            projectId: "puntos-dm",
+            storageBucket: "puntos-dm.firebasestorage.app",
+            messagingSenderId: "506501598426",
+            appId: "1:506501598426:web:9a10d692f8b93201c1e9e3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const docRef = doc(db, "partida", "duelo_actual");
+
+        onSnapshot(docRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                document.getElementById('puntos-m').innerText = data.puntos_m;
+                document.getElementById('puntos-d').innerText = data.puntos_d;
+                if(data.fecha_limite) {
+                    const fecha = data.fecha_limite.toDate();
+                    document.getElementById('meta-fecha').innerText = fecha.toLocaleDateString();
+                }
+                document.getElementById('barra-m').style.width = `${Math.max(0, Math.min(data.puntos_m, 100))}%`;
+                document.getElementById('barra-d').style.width = `${Math.max(0, Math.min(data.puntos_d, 100))}%`;
+            }
+        });
+
+        // 2. ESCUCHAR TODO EL HISTORIAL (Sin límite)
+        // 2. ESCUCHAR TODO EL HISTORIAL
+        const q = query(collection(db, "historial"), orderBy("fecha", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const lista = document.getElementById('historial-lista');
+            lista.innerHTML = '';
+            
+            if (snapshot.empty) {
+                lista.innerHTML = 'No hay registros aún.';
+                return;
+            }
+
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                const color = item.tipo === 'quitar' ? 'text-red-400' : 'text-emerald-400';
+                const nombre = item.usuario === 'puntos_m' ? 'Mayerli' : 'David';
+                
+                // Formatear la fecha
+                let fechaFormateada = "";
+                if (item.fecha) {
+                    const d = item.fecha.toDate();
+                    // Formato: 14:30 - 25/10
+                    fechaFormateada = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' + d.toLocaleDateString([], {day: '2-digit', month: '2-digit'});
+                }
+
+                lista.innerHTML += `
+                    <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                        <div class="text-left flex-1 pr-2">
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm font-semibold text-slate-200">${nombre}</p>
+                                <span class="text-[10px] text-slate-500 font-mono">${fechaFormateada}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">${item.motivo}</p>
+                        </div>
+                        <span class="${color} font-bold text-lg whitespace-nowrap">
+                            ${item.tipo === 'quitar' ? '-' : '+'}${item.cantidad}
+                        </span>
+                    </div>`;
+            });
+        });
+
+        window.enviarAccion = async (tipo) => {
+            const usuario = document.getElementById('input-usuario').value;
+            const puntosValue = document.getElementById('input-puntos').value;
+            const motivo = document.getElementById('input-motivo').value;
+
+            if (!puntosValue || !motivo) return Swal.fire({ icon: 'error', title: 'Oops...', text: 'Hay que llenar los puntos y el motivo Bebé', background: '#1e293b', color: '#fff' });
+
+            const puntosInt = parseInt(puntosValue);
+            const nombreMostrar = usuario === 'puntos_m' ? 'Mayerli' : 'David';
+
+            const confirm = await Swal.fire({
+                icon: 'info',
+                title: '¿Confirmar?',
+                text: `${tipo === 'quitar' ? 'Restar' : 'Sumar'} ${puntosInt} puntos a ${nombreMostrar}`,
+                showCancelButton: true,
+                confirmButtonColor: '#8b5cf6',
+                background: '#1e293b',
+                color: '#fff'
+            });
+
+            if (confirm.isConfirmed) {
+                try {
+                    const valorFinal = tipo === 'quitar' ? -puntosInt : puntosInt;
+                    await updateDoc(docRef, { [usuario]: increment(valorFinal) });
+                    await addDoc(collection(db, "historial"), {
+                        usuario: usuario,
+                        tipo: tipo,
+                        cantidad: puntosInt,
+                        motivo: motivo,
+                        fecha: serverTimestamp()
+                    });
+                    document.getElementById('input-puntos').value = '';
+                    document.getElementById('input-motivo').value = '';
+                } catch (e) {
+                    Swal.fire('Error', 'Error de conexión', 'error');
+                }
+            }
+        };
+    </script>
+</body>
+</html>
