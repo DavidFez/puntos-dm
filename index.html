@@ -6,6 +6,37 @@
     <title>Puntos Mayerli y David ❤️</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        #puntos-m, #puntos-d {
+            font-variant-numeric: tabular-nums; /* Hace que todos los números tengan el mismo ancho */
+        }
+        /* Foto del que va ganando: Brillo y escala */
+        .foto-ganador {
+            border: 3px solid #f472b6; /* Rosa/Violeta */
+            filter: drop-shadow(0 0 8px #f472b6);
+            transform: scale(1.1);
+            transition: all 0.5s ease;
+        }
+
+        /* Foto del que va perdiendo: Blanco y negro opcional */
+        .foto-perdedor {
+            filter: grayscale(80%) opacity(70%);
+            border: 2px solid #475569;
+            transform: scale(0.95);
+            transition: all 0.5s ease;
+        }
+
+        .avatar-frame {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            object-fit: cover;
+            background: #1e293b;
+        }
+    </style>
+
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans pb-10">
 
@@ -17,11 +48,19 @@
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-6">
+
+        <div class="text-center h-6 flex items-center justify-center"> 
+            <span id="mensaje-motivador" class="text-xs font-medium text-violet-400 italic transition-all duration-500"></span>
+        </div>
+
         <section class="grid grid-cols-1 gap-4">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl">
                 <div class="flex justify-between items-center mb-3">
-                    <span class="text-lg font-medium text-pink-300">Mayerli 🥰</span>
-                    <span id="puntos-m" class="text-4xl font-black">--</span>
+                    <div class="flex items-center gap-3">
+                        <img id="foto-m" src="may.jpeg" class="avatar-frame border-2 border-pink-500 shadow-lg">
+                        <span class="text-lg font-medium text-pink-300">Mayerli</span>
+                    </div>
+                    <span id="puntos-m" class="text-4xl font-black tabular-nums">--</span>
                 </div>
                 <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
                     <div id="barra-m" class="bg-pink-500 h-full transition-all duration-700" style="width: 0%"></div>
@@ -30,8 +69,11 @@
 
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl">
                 <div class="flex justify-between items-center mb-3">
-                    <span class="text-lg font-medium text-blue-300">David 😎</span>
-                    <span id="puntos-d" class="text-4xl font-black">--</span>
+                    <div class="flex items-center gap-3">
+                        <img id="foto-d" src="dav.jpeg" class="avatar-frame border-2 border-blue-500 shadow-lg">
+                        <span class="text-lg font-medium text-blue-300">David</span>
+                    </div>
+                    <span id="puntos-d" class="text-4xl font-black tabular-nums">--</span>
                 </div>
                 <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
                     <div id="barra-d" class="bg-blue-500 h-full transition-all duration-700" style="width: 0%"></div>
@@ -43,6 +85,7 @@
             <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 text-center">Registrar de Puntos</h3>
             <div class="space-y-4">
                 <select id="input-usuario" class="w-full bg-slate-800 border-none rounded-xl p-3 focus:ring-2 focus:ring-violet-500 outline-none text-white appearance-none">
+                    <option value="" selected disabled hidden>Seleccionar nombre</option>
                     <option value="puntos_m">Para Mayerli</option>
                     <option value="puntos_d">Para David</option>
                 </select>
@@ -87,11 +130,40 @@
         const db = getFirestore(app);
         const docRef = doc(db, "partida", "duelo_actual");
 
+        // --- 1. AQUÍ PEGAS LA FUNCIÓN DE ANIMACIÓN ---
+        function animarPuntos(id, valorFinal) {
+            const el = document.getElementById(id);
+            const valorActual = parseInt(el.innerText) || 0;
+            let inicio = valorActual;
+            const duracion = 1000; 
+            
+            if (valorFinal === valorActual) return;
+
+            const pasos = Math.abs(valorFinal - valorActual);
+            const intervaloCeleridad = Math.max(duracion / pasos, 20); // No bajar de 20ms para suavidad
+
+            const timer = setInterval(() => {
+                if (inicio < valorFinal) inicio++;
+                else if (inicio > valorFinal) inicio--;
+                
+                el.innerText = inicio;
+                
+                if (inicio === valorFinal) clearInterval(timer);
+            }, intervaloCeleridad);
+        }
+
+        // --- 2. USAR LA FUNCIÓN EN EL SNAPSHOT ---
         onSnapshot(docRef, (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
-                document.getElementById('puntos-m').innerText = data.puntos_m;
-                document.getElementById('puntos-d').innerText = data.puntos_d;
+                
+                // Reemplazamos el innerText directo por la animación
+                animarPuntos('puntos-m', data.puntos_m);
+                animarPuntos('puntos-d', data.puntos_d);
+                
+                // --- LLAMADA A LOS MENSAJES ---
+                actualizarMensaje(data.puntos_m, data.puntos_d);
+                
                 if(data.fecha_limite) {
                     const fecha = data.fecha_limite.toDate();
                     document.getElementById('meta-fecha').innerText = fecha.toLocaleDateString();
@@ -101,53 +173,120 @@
             }
         });
 
-        // 2. ESCUCHAR TODO EL HISTORIAL (Sin límite)
         // 2. ESCUCHAR TODO EL HISTORIAL
         const q = query(collection(db, "historial"), orderBy("fecha", "desc"));
         onSnapshot(q, (snapshot) => {
             const lista = document.getElementById('historial-lista');
             lista.innerHTML = '';
             
-            if (snapshot.empty) {
-                lista.innerHTML = 'No hay registros aún.';
-                return;
-            }
+            let ultimaFechaCard = ""; // Variable para rastrear el cambio de día
 
             snapshot.forEach(doc => {
                 const item = doc.data();
+                if (!item.fecha) return; // Saltamos si la fecha aún no llega del servidor
+
+                const d = item.fecha.toDate();
+                const fechaDia = d.toLocaleDateString([], { day: '2-digit', month: 'long' }); // Ej: "21 de febrero"
+                const horaFormateada = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
                 const color = item.tipo === 'quitar' ? 'text-red-400' : 'text-emerald-400';
                 const nombre = item.usuario === 'puntos_m' ? 'Mayerli' : 'David';
-                
-                // Formatear la fecha
-                let fechaFormateada = "";
-                if (item.fecha) {
-                    const d = item.fecha.toDate();
-                    // Formato: 14:30 - 25/10
-                    fechaFormateada = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' + d.toLocaleDateString([], {day: '2-digit', month: '2-digit'});
+
+                // --- LÓGICA DEL DIVISOR DE DÍAS ---
+                if (fechaDia !== ultimaFechaCard) {
+                    ultimaFechaCard = fechaDia;
+                    lista.innerHTML += `
+                        <div class="flex items-center gap-4 my-4">
+                            <div class="h-[1px] bg-slate-800 flex-1"></div>
+                            <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">${fechaDia}</span>
+                            <div class="h-[1px] bg-slate-800 flex-1"></div>
+                        </div>`;
                 }
 
+                // --- REGISTRO DE PUNTO ---
                 lista.innerHTML += `
                     <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-                        <div class="text-left flex-1 pr-2">
+                        <div class="text-left flex-1 pr-2 min-w-0">
                             <div class="flex items-center gap-2">
                                 <p class="text-sm font-semibold text-slate-200">${nombre}</p>
-                                <span class="text-[10px] text-slate-500 font-mono">${fechaFormateada}</span>
+                                <span class="text-[10px] text-slate-500 font-mono">${horaFormateada}</span>
                             </div>
-                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">${item.motivo}</p>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed break-words">${item.motivo}</p>
                         </div>
-                        <span class="${color} font-bold text-lg whitespace-nowrap">
+                        <span class="${color} font-bold text-lg whitespace-nowrap ml-2">
                             ${item.tipo === 'quitar' ? '-' : '+'}${item.cantidad}
                         </span>
                     </div>`;
             });
+
+            
         });
+
+        const frasesMayerliGana = [
+            "¡Mayerli está imparable! ✨",
+            "David, ¡tienes que esforzarte más bebé! 😂",
+            "Reina absoluta del marcador 👑",
+            "¿Alguien puede alcanzar a esta hermosa 🥰?",
+            "Mayerli lleva la delantera con estilo 😘"
+        ];
+
+        const frasesDavidGana = [
+            "¡David tomó la delantera! 😎",
+            "Mayerli, no se deje ganar bebé 😜",
+            "¡Poder David activado! 🔥",
+            "David líder de la tabla bebé 😎",
+            "David está en su mejor momento 😌"
+        ];
+
+        const frasesEmpate = [
+            "¿Cómo arreglamos ese empate bebé? 😈",
+            "¿Qué hacemos para ganar mas puntos? 😏",
+            "¿Nos enviamos fotitos hot para desempatar? 😏",
+            "¡Arreglamos ese empate en el escritorio! 🔥",
+            "Nos arreglamos con besitos ese empate 😋"
+        ];
+
+        function actualizarMensaje(puntosM, puntosD) {
+            const el = document.getElementById('mensaje-motivador');
+            let frase = "";
+            
+            // Diferencia para considerar "empate o cerca"
+            if (puntosM === puntosD) {
+                frase = frasesEmpate[Math.floor(Math.random() * frasesEmpate.length)];
+            } else if (puntosM > puntosD) {
+                frase = frasesMayerliGana[Math.floor(Math.random() * frasesMayerliGana.length)];
+            } else {
+                frase = frasesDavidGana[Math.floor(Math.random() * frasesDavidGana.length)];
+            }
+            
+            el.innerText = frase;
+        }
 
         window.enviarAccion = async (tipo) => {
             const usuario = document.getElementById('input-usuario').value;
             const puntosValue = document.getElementById('input-puntos').value;
             const motivo = document.getElementById('input-motivo').value;
 
-            if (!puntosValue || !motivo) return Swal.fire({ icon: 'error', title: 'Oops...', text: 'Hay que llenar los puntos y el motivo Bebé', background: '#1e293b', color: '#fff' });
+            // VALIDACIÓN: Si el usuario está vacío (es decir, sigue en "Seleccionar nombre")
+            if (!usuario) {
+                return Swal.fire({ 
+                    icon: 'warning', 
+                    title: '¿A quién?', 
+                    text: 'Primero hay que seleccionar a quién Bebé', 
+                    background: '#1e293b', 
+                    color: '#fff' 
+                });
+            }
+
+            if (!puntosValue || !motivo) {
+                return Swal.fire({ 
+                    icon: 'error', 
+                    title: '¡Oops!', 
+                    text: 'Hay que llenar los puntos y el motivo Bebé', 
+                    background: '#1e293b', 
+                    color: '#fff' 
+                });
+            }
 
             const puntosInt = parseInt(puntosValue);
             const nombreMostrar = usuario === 'puntos_m' ? 'Mayerli' : 'David';
