@@ -2,323 +2,164 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puntos Mayerli y David ❤️</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#020617">
+    <title>Puntos ❤️</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <style>
-        #puntos-m, #puntos-d {
-            font-variant-numeric: tabular-nums; /* Hace que todos los números tengan el mismo ancho */
-        }
-        /* Foto del que va ganando: Brillo y escala */
-        .foto-ganador {
-            border: 3px solid #f472b6; /* Rosa/Violeta */
-            filter: drop-shadow(0 0 8px #f472b6);
-            transform: scale(1.1);
-            transition: all 0.5s ease;
-        }
-
-        /* Foto del que va perdiendo: Blanco y negro opcional */
-        .foto-perdedor {
-            filter: grayscale(80%) opacity(70%);
-            border: 2px solid #475569;
-            transform: scale(0.95);
-            transition: all 0.5s ease;
-        }
-
-        .avatar-frame {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            overflow: hidden;
-            object-fit: cover;
-            background: #1e293b;
-        }
-    </style>
-
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans pb-10">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
 
-    <header class="p-6 text-center border-b border-slate-800 bg-slate-900/50 backdrop-blur-md">
-        <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent">
+    <header class="p-5 text-center border-b border-slate-800 bg-slate-900/50 backdrop-blur-md">
+        <h1 class="text-xl font-bold bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent">
             Puntos de Mayerli y David
         </h1>
-        <p class="text-xs text-slate-400 mt-1">Fecha límite: <span id="meta-fecha" class="text-pink-400 font-mono">--/--/----</span></p>
+        <p class="text-xs text-slate-400 mt-1">
+            Fecha límite: <span id="meta-fecha" class="text-slate-500 font-mono">--</span>
+        </p>
     </header>
 
-    <main class="max-w-md mx-auto p-4 space-y-6">
+    <main class="max-w-md mx-auto p-4 pb-28">
 
-        <div class="text-center h-6 flex items-center justify-center"> 
-            <span id="mensaje-motivador" class="text-xs font-medium text-violet-400 italic transition-all duration-500"></span>
-        </div>
+        <!-- ============ VISTA: DUELO ============ -->
+        <section id="vista-duelo" data-vista class="space-y-6">
 
-        <section class="grid grid-cols-1 gap-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl">
-                <div class="flex justify-between items-center mb-3">
-                    <div class="flex items-center gap-3">
-                        <img id="foto-m" src="may.jpeg" class="avatar-frame border-2 border-pink-500 shadow-lg">
-                        <span class="text-lg font-medium text-pink-300">Mayerli</span>
+            <div class="text-center h-6 flex items-center justify-center">
+                <span id="mensaje-motivador" class="text-xs font-medium text-violet-400 italic transition-all duration-500"></span>
+            </div>
+            <p id="sr-marcador" class="sr-only" aria-live="polite"></p>
+
+            <div class="grid grid-cols-1 gap-4">
+                <div class="relative overflow-hidden bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3">
+                            <img id="foto-m" src="may.jpeg" alt="Mayerli" width="60" height="60" loading="lazy" class="avatar-frame border-2 border-pink-500 shadow-lg">
+                            <span class="text-lg font-medium text-pink-300">Mayerli</span>
+                        </div>
+                        <span id="puntos-m" class="text-4xl font-black tabular-nums">--</span>
                     </div>
-                    <span id="puntos-m" class="text-4xl font-black tabular-nums">--</span>
+                    <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
+                        <div id="barra-m" class="bg-pink-500 h-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                    <span id="flote-m" class="num-flote text-pink-400"></span>
                 </div>
-                <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
-                    <div id="barra-m" class="bg-pink-500 h-full transition-all duration-700" style="width: 0%"></div>
+
+                <div class="relative overflow-hidden bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3">
+                            <img id="foto-d" src="dav.jpeg" alt="David" width="60" height="60" loading="lazy" class="avatar-frame border-2 border-blue-500 shadow-lg">
+                            <span class="text-lg font-medium text-blue-300">David</span>
+                        </div>
+                        <span id="puntos-d" class="text-4xl font-black tabular-nums">--</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
+                        <div id="barra-d" class="bg-blue-500 h-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                    <span id="flote-d" class="num-flote text-blue-400"></span>
                 </div>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl">
-                <div class="flex justify-between items-center mb-3">
-                    <div class="flex items-center gap-3">
-                        <img id="foto-d" src="dav.jpeg" class="avatar-frame border-2 border-blue-500 shadow-lg">
-                        <span class="text-lg font-medium text-blue-300">David</span>
-                    </div>
-                    <span id="puntos-d" class="text-4xl font-black tabular-nums">--</span>
-                </div>
-                <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
-                    <div id="barra-d" class="bg-blue-500 h-full transition-all duration-700" style="width: 0%"></div>
-                </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button type="button" id="btn-fecha"
+                    class="text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-xl transition-colors">📅 Fecha límite</button>
+                <button type="button" id="btn-reiniciar"
+                    class="text-xs font-semibold bg-slate-800 hover:bg-red-600 text-slate-200 py-2.5 rounded-xl transition-colors">🔄 Reiniciar ronda</button>
             </div>
+
+            <div id="banner" hidden class="text-center text-sm font-medium rounded-xl px-4 py-3"></div>
+
+            <fieldset id="form-registro" class="bg-slate-900 border border-slate-700 rounded-3xl p-6">
+                <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 text-center">Registrar puntos</h2>
+                <div class="space-y-4">
+                    <select id="input-usuario" class="w-full bg-slate-800 border-none rounded-xl p-3 focus:ring-2 focus:ring-violet-500 outline-none text-white appearance-none">
+                        <option value="" selected disabled hidden>Seleccionar nombre</option>
+                        <option value="puntos_m">Para Mayerli</option>
+                        <option value="puntos_d">Para David</option>
+                    </select>
+
+                    <div class="flex flex-row gap-2 w-full">
+                        <input id="input-puntos" type="number" inputmode="numeric" min="1" placeholder="Pts"
+                            class="w-[70px] bg-slate-800 border-none rounded-xl p-3 text-center outline-none focus:ring-2 focus:ring-violet-500 text-white box-border shrink-0">
+
+                        <input id="input-motivo" type="text" maxlength="200" placeholder="¿Por qué?"
+                            class="flex-1 bg-slate-800 border-none rounded-xl p-3 outline-none focus:ring-2 focus:ring-violet-500 text-white box-border min-w-0">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" onclick="enviarAccion('quitar')" aria-label="Descontar puntos"
+                            class="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white font-bold py-3 rounded-xl transition-all border border-red-500/50">Descontar (−)</button>
+                        <button type="button" onclick="enviarAccion('añadir')" aria-label="Sumar puntos"
+                            class="bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-white font-bold py-3 rounded-xl transition-all border border-emerald-500/50">Sumar (+)</button>
+                    </div>
+                </div>
+            </fieldset>
+
+            <section class="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+                <h2 id="recompensas-titulo" class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Recompensas</h2>
+                <div id="recompensas-lista" class="flex flex-col gap-2 mb-3"></div>
+                <fieldset id="recompensas-form" class="flex gap-2">
+                    <input id="recompensa-input" type="text" maxlength="120" placeholder="Nueva recompensa"
+                        class="flex-1 bg-slate-800 border-none rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-500 text-white min-w-0">
+                    <button type="button" id="btn-recompensa"
+                        class="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 rounded-xl transition-colors shrink-0">Agregar</button>
+                </fieldset>
+            </section>
         </section>
 
-        <section class="bg-slate-900 border border-slate-700 rounded-3xl p-6">
-            <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 text-center">Registrar de Puntos</h3>
-            <div class="space-y-4">
-                <select id="input-usuario" class="w-full bg-slate-800 border-none rounded-xl p-3 focus:ring-2 focus:ring-violet-500 outline-none text-white appearance-none">
-                    <option value="" selected disabled hidden>Seleccionar nombre</option>
-                    <option value="puntos_m">Para Mayerli</option>
-                    <option value="puntos_d">Para David</option>
-                </select>
-
-                <div class="flex flex-row gap-2 w-full">
-                    <input id="input-puntos" type="number" placeholder="Pts" 
-                        class="w-[65px] bg-slate-800 border-none rounded-xl p-3 text-center outline-none focus:ring-2 focus:ring-violet-500 text-white box-border shrink-0">
-                    
-                    <input id="input-motivo" type="text" placeholder="¿Por qué?" 
-                        class="flex-1 bg-slate-800 border-none rounded-xl p-3 outline-none focus:ring-2 focus:ring-violet-500 text-white box-border min-w-0">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="enviarAccion('quitar')" class="bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-red-500/50">Descontar (-)</button>
-                    <button onclick="enviarAccion('añadir')" class="bg-emerald-500/20 hover:bg-emerald-500 text-emerald-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-emerald-500/50">Sumar (+)</button>
-                </div>
+        <!-- ============ VISTA: HISTORIAL ============ -->
+        <section id="vista-historial" data-vista hidden class="space-y-4">
+            <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider px-2">Historial de puntos</h2>
+            <div id="historial-lista" class="flex flex-col gap-3">
+                <div class="skeleton h-16 rounded-2xl"></div>
+                <div class="skeleton h-16 rounded-2xl"></div>
+                <div class="skeleton h-16 rounded-2xl"></div>
             </div>
+            <button type="button" id="btn-mas" hidden
+                class="mt-1 w-full text-xs text-violet-400 hover:text-violet-300 py-2 transition-colors">Cargar más</button>
         </section>
 
-        <section>
-            <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2">Historial de Puntos</h3>
-            <div id="historial-lista" class="flex flex-col gap-3 text-sm text-slate-400 text-center py-4 italic">
-                Cargando actividad...
+        <!-- ============ VISTA: MENSAJES ============ -->
+        <section id="vista-mensajes" data-vista hidden class="space-y-4">
+            <div class="px-2">
+                <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Mensajes del día</h2>
+                <p class="text-[11px] text-slate-500">Se borran solos después de 24 h.</p>
+            </div>
+            <div id="mensajes-lista" class="flex flex-col gap-2"></div>
+            <div class="flex gap-2 sticky bottom-24 bg-slate-950/80 backdrop-blur py-2 rounded-2xl">
+                <input id="mensaje-input" type="text" maxlength="200" placeholder="Escribe algo bonito…"
+                    class="flex-1 bg-slate-800 border-none rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 text-white min-w-0">
+                <button type="button" id="btn-mensaje"
+                    class="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 rounded-xl transition-colors shrink-0">Enviar</button>
             </div>
         </section>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, increment, collection, addDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <!-- Burbuja flotante de mensaje nuevo -->
+    <div id="burbuja" hidden></div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCSna0h_RtHOHII73EHciBaRYPcBLXX6as",
-            authDomain: "puntos-dm.firebaseapp.com",
-            projectId: "puntos-dm",
-            storageBucket: "puntos-dm.firebasestorage.app",
-            messagingSenderId: "506501598426",
-            appId: "1:506501598426:web:9a10d692f8b93201c1e9e3"
-        };
+    <!-- Barra de pestañas -->
+    <nav id="tabbar" class="fixed bottom-0 inset-x-0 z-40 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex">
+        <button type="button" data-tab="duelo" aria-label="Duelo"
+            class="tab flex-1 flex flex-col items-center gap-0.5 py-2.5 text-slate-500">
+            <span class="text-xl leading-none">🏆</span>
+            <span class="text-[10px] font-medium">Duelo</span>
+        </button>
+        <button type="button" data-tab="historial" aria-label="Historial"
+            class="tab flex-1 flex flex-col items-center gap-0.5 py-2.5 text-slate-500">
+            <span class="text-xl leading-none">📜</span>
+            <span class="text-[10px] font-medium">Historial</span>
+        </button>
+        <button type="button" data-tab="mensajes" aria-label="Mensajes"
+            class="tab relative flex-1 flex flex-col items-center gap-0.5 py-2.5 text-slate-500">
+            <span class="text-xl leading-none">💬</span>
+            <span class="text-[10px] font-medium">Mensajes</span>
+            <span id="badge-mensajes" hidden
+                class="absolute top-1 left-1/2 ml-2 min-w-[1rem] h-4 px-1 rounded-full bg-pink-500 text-white text-[10px] font-bold flex items-center justify-center">0</span>
+        </button>
+    </nav>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const docRef = doc(db, "partida", "duelo_actual");
-
-        // --- 1. AQUÍ PEGAS LA FUNCIÓN DE ANIMACIÓN ---
-        function animarPuntos(id, valorFinal) {
-            const el = document.getElementById(id);
-            const valorActual = parseInt(el.innerText) || 0;
-            let inicio = valorActual;
-            const duracion = 1000; 
-            
-            if (valorFinal === valorActual) return;
-
-            const pasos = Math.abs(valorFinal - valorActual);
-            const intervaloCeleridad = Math.max(duracion / pasos, 20); // No bajar de 20ms para suavidad
-
-            const timer = setInterval(() => {
-                if (inicio < valorFinal) inicio++;
-                else if (inicio > valorFinal) inicio--;
-                
-                el.innerText = inicio;
-                
-                if (inicio === valorFinal) clearInterval(timer);
-            }, intervaloCeleridad);
-        }
-
-        // --- 2. USAR LA FUNCIÓN EN EL SNAPSHOT ---
-        onSnapshot(docRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.data();
-                
-                // Reemplazamos el innerText directo por la animación
-                animarPuntos('puntos-m', data.puntos_m);
-                animarPuntos('puntos-d', data.puntos_d);
-                
-                // --- LLAMADA A LOS MENSAJES ---
-                actualizarMensaje(data.puntos_m, data.puntos_d);
-                
-                if(data.fecha_limite) {
-                    const fecha = data.fecha_limite.toDate();
-                    document.getElementById('meta-fecha').innerText = fecha.toLocaleDateString();
-                }
-                document.getElementById('barra-m').style.width = `${Math.max(0, Math.min(data.puntos_m, 100))}%`;
-                document.getElementById('barra-d').style.width = `${Math.max(0, Math.min(data.puntos_d, 100))}%`;
-            }
-        });
-
-        // 2. ESCUCHAR TODO EL HISTORIAL
-        const q = query(collection(db, "historial"), orderBy("fecha", "desc"));
-        onSnapshot(q, (snapshot) => {
-            const lista = document.getElementById('historial-lista');
-            lista.innerHTML = '';
-            
-            let ultimaFechaCard = ""; // Variable para rastrear el cambio de día
-
-            snapshot.forEach(doc => {
-                const item = doc.data();
-                if (!item.fecha) return; // Saltamos si la fecha aún no llega del servidor
-
-                const d = item.fecha.toDate();
-                const fechaDia = d.toLocaleDateString([], { day: '2-digit', month: 'long' }); // Ej: "21 de febrero"
-                const horaFormateada = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                
-                const color = item.tipo === 'quitar' ? 'text-red-400' : 'text-emerald-400';
-                const nombre = item.usuario === 'puntos_m' ? 'Mayerli' : 'David';
-
-                // --- LÓGICA DEL DIVISOR DE DÍAS ---
-                if (fechaDia !== ultimaFechaCard) {
-                    ultimaFechaCard = fechaDia;
-                    lista.innerHTML += `
-                        <div class="flex items-center gap-4 my-4">
-                            <div class="h-[1px] bg-slate-800 flex-1"></div>
-                            <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">${fechaDia}</span>
-                            <div class="h-[1px] bg-slate-800 flex-1"></div>
-                        </div>`;
-                }
-
-                // --- REGISTRO DE PUNTO ---
-                lista.innerHTML += `
-                    <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-                        <div class="text-left flex-1 pr-2 min-w-0">
-                            <div class="flex items-center gap-2">
-                                <p class="text-sm font-semibold text-slate-200">${nombre}</p>
-                                <span class="text-[10px] text-slate-500 font-mono">${horaFormateada}</span>
-                            </div>
-                            <p class="text-xs text-slate-400 mt-1 leading-relaxed break-words">${item.motivo}</p>
-                        </div>
-                        <span class="${color} font-bold text-lg whitespace-nowrap ml-2">
-                            ${item.tipo === 'quitar' ? '-' : '+'}${item.cantidad}
-                        </span>
-                    </div>`;
-            });
-
-            
-        });
-
-        const frasesMayerliGana = [
-            "¡Mayerli está imparable! ✨",
-            "David, ¡tienes que esforzarte más bebé! 😂",
-            "Reina absoluta del marcador 👑",
-            "¿Alguien puede alcanzar a esta hermosa 🥰?",
-            "Mayerli lleva la delantera con estilo 😘"
-        ];
-
-        const frasesDavidGana = [
-            "¡David tomó la delantera! 😎",
-            "Mayerli, no se deje ganar bebé 😜",
-            "¡Poder David activado! 🔥",
-            "David líder de la tabla bebé 😎",
-            "David está en su mejor momento 😌"
-        ];
-
-        const frasesEmpate = [
-            "¿Cómo arreglamos ese empate bebé? 😈",
-            "¿Qué hacemos para ganar mas puntos? 😏",
-            "¿Nos enviamos fotitos hot para desempatar? 😏",
-            "¡Arreglamos ese empate en el escritorio! 🔥",
-            "Nos arreglamos con besitos ese empate 😋"
-        ];
-
-        function actualizarMensaje(puntosM, puntosD) {
-            const el = document.getElementById('mensaje-motivador');
-            let frase = "";
-            
-            // Diferencia para considerar "empate o cerca"
-            if (puntosM === puntosD) {
-                frase = frasesEmpate[Math.floor(Math.random() * frasesEmpate.length)];
-            } else if (puntosM > puntosD) {
-                frase = frasesMayerliGana[Math.floor(Math.random() * frasesMayerliGana.length)];
-            } else {
-                frase = frasesDavidGana[Math.floor(Math.random() * frasesDavidGana.length)];
-            }
-            
-            el.innerText = frase;
-        }
-
-        window.enviarAccion = async (tipo) => {
-            const usuario = document.getElementById('input-usuario').value;
-            const puntosValue = document.getElementById('input-puntos').value;
-            const motivo = document.getElementById('input-motivo').value;
-
-            // VALIDACIÓN: Si el usuario está vacío (es decir, sigue en "Seleccionar nombre")
-            if (!usuario) {
-                return Swal.fire({ 
-                    icon: 'warning', 
-                    title: '¿A quién?', 
-                    text: 'Primero hay que seleccionar a quién Bebé', 
-                    background: '#1e293b', 
-                    color: '#fff' 
-                });
-            }
-
-            if (!puntosValue || !motivo) {
-                return Swal.fire({ 
-                    icon: 'error', 
-                    title: '¡Oops!', 
-                    text: 'Hay que llenar los puntos y el motivo Bebé', 
-                    background: '#1e293b', 
-                    color: '#fff' 
-                });
-            }
-
-            const puntosInt = parseInt(puntosValue);
-            const nombreMostrar = usuario === 'puntos_m' ? 'Mayerli' : 'David';
-
-            const confirm = await Swal.fire({
-                icon: 'info',
-                title: '¿Confirmar?',
-                text: `${tipo === 'quitar' ? 'Restar' : 'Sumar'} ${puntosInt} puntos a ${nombreMostrar}`,
-                showCancelButton: true,
-                confirmButtonColor: '#8b5cf6',
-                background: '#1e293b',
-                color: '#fff'
-            });
-
-            if (confirm.isConfirmed) {
-                try {
-                    const valorFinal = tipo === 'quitar' ? -puntosInt : puntosInt;
-                    await updateDoc(docRef, { [usuario]: increment(valorFinal) });
-                    await addDoc(collection(db, "historial"), {
-                        usuario: usuario,
-                        tipo: tipo,
-                        cantidad: puntosInt,
-                        motivo: motivo,
-                        fecha: serverTimestamp()
-                    });
-                    document.getElementById('input-puntos').value = '';
-                    document.getElementById('input-motivo').value = '';
-                } catch (e) {
-                    Swal.fire('Error', 'Error de conexión', 'error');
-                }
-            }
-        };
-    </script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>

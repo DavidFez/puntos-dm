@@ -1,0 +1,125 @@
+/* Estilos propios. Tailwind (CDN) hace el resto desde las clases del HTML. */
+
+#puntos-m,
+#puntos-d {
+  font-variant-numeric: tabular-nums; /* números del mismo ancho */
+}
+
+/* Foto del que va ganando: brillo y escala */
+.foto-ganador {
+  border: 3px solid #f472b6;
+  filter: drop-shadow(0 0 8px #f472b6);
+  transform: scale(1.1);
+  transition: all 0.5s ease;
+}
+
+/* Foto del que va perdiendo: apagada */
+.foto-perdedor {
+  filter: grayscale(80%) opacity(70%);
+  border: 2px solid #475569;
+  transform: scale(0.95);
+  transition: all 0.5s ease;
+}
+
+.avatar-frame {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  object-fit: cover;
+  background: #1e293b;
+}
+
+/* Número (+5 / -3) que sube y se desvanece al puntuar */
+.num-flote {
+  position: absolute;
+  right: 1.25rem;
+  top: 2.25rem;
+  font-weight: 900;
+  font-size: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+}
+.num-flote.activo {
+  animation: flote 1s ease-out forwards;
+}
+@keyframes flote {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-32px); }
+}
+
+/* Formularios bloqueados (sin fecha límite o duelo vencido) */
+fieldset {
+  min-width: 0; /* evita el desbordamiento clásico del fieldset en flex/grid */
+}
+fieldset:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Placeholder mientras carga el historial */
+.skeleton {
+  background: linear-gradient(90deg, #1e293b 25%, #334155 37%, #1e293b 63%);
+  background-size: 400% 100%;
+  animation: skel 1.4s ease infinite;
+}
+@keyframes skel {
+  from { background-position: 100% 50%; }
+  to   { background-position: 0 50%; }
+}
+
+/* Barra de pestañas inferior */
+#tabbar {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+#tabbar .tab.tab-activo {
+  color: #a78bfa;
+}
+
+/* Burbuja flotante de mensaje nuevo */
+#burbuja {
+  position: fixed;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: 90%;
+  background: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.burbuja-anim {
+  animation: burbuja-in 0.3s ease-out;
+}
+@keyframes burbuja-in {
+  from { opacity: 0; transform: translate(-50%, -12px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Texto solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
